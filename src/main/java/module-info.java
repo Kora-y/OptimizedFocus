@@ -1,2 +1,7 @@
-module $MODULE_NAME$ {
+module org.efficientfocus {
+    requires javafx.controls;
+    requires javafx.fxml;
+
+    opens org.efficientfocus to javafx.fxml;
+    exports org.efficientfocus;
 }
