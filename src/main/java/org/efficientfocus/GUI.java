@@ -59,12 +59,16 @@ public class GUI extends Application {
         newTaskStage.setTitle("Add New Task");
         Label taskLabel = new Label("Enter task name : ");
         TextField taskField = new TextField();
+        Label taskTimeLabel = new Label("Enter task time : ");
+        TextField taskTimeField = new TextField();
         Button saveTaskButton = new Button("Save Task");
 
         saveTaskButton.setOnAction(saveEvent -> {
             String taskName = taskField.getText();
+            String taskTime = taskTimeField.getText();
             if (!taskName.isEmpty()) {
                 Button taskButton = new Button(taskName);
+                Button taskTime = new Button(taskTime);
                 //it adds a new "Focus" button to the Vbox on the main screen
                 ((VBox) stage.getScene().getRoot()).getChildren().add(taskButton);
                 newTaskStage.close();
@@ -76,7 +80,7 @@ public class GUI extends Application {
                 alert.showAndWait();
             }
         });
-        VBox taskVBox = new VBox(10, taskLabel, taskField, saveTaskButton);
+        VBox taskVBox = new VBox(10, taskLabel, taskField,taskTimeLabel, taskTimeField,  saveTaskButton);
         Scene newTaskScene = new Scene(taskVBox, 300, 200);
         newTaskStage.setScene(newTaskScene);
         newTaskStage.show();
