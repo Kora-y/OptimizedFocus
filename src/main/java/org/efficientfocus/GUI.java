@@ -1,6 +1,7 @@
 package org.efficientfocus;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -11,7 +12,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class GUI extends Application {
+
+    private boolean isCounting = false; // Zamanlayıcının çalışıp çalışmadığını kontrol eder
+    private Timer timer;
+    private int timeRemaining; // Geri sayımın kalan süresi
+
     @Override
     public void start(Stage stage) {
         stage.setTitle("Age Verification");
@@ -32,7 +41,6 @@ public class GUI extends Application {
                     alert.showAndWait();
                     stage.close();
                 } else {
-                    // If this executes, that means the Age is valid and is going to proceed to main application
                     showMainApplication(stage);
                 }
             } catch (NumberFormatException e) {
@@ -55,45 +63,53 @@ public class GUI extends Application {
 
         Button addTaskButton = new Button("Add Task");
         addTaskButton.setOnAction(event -> {
-            // it opens a new window and asks user to specify a new "Focus" name
             Stage newTaskStage = new Stage();
             newTaskStage.setTitle("Add New Task");
 
             Label taskLabel = new Label("Enter task name:");
             TextField taskField = new TextField();
 
-            Label taskTimeLabel = new Label("Enter task time:");
+            Label taskTimeLabel = new Label("Enter task time (in seconds):");
             TextField taskTimeField = new TextField();
 
             Button saveTaskButton = new Button("Save Task");
 
             saveTaskButton.setOnAction(saveEvent -> {
                 String taskName = taskField.getText();
-                String taskTime = taskTimeField.getText();
+                String taskTimeText = taskTimeField.getText();
 
-                if (!taskName.isEmpty() && !taskTime.isEmpty()) {
-                    // Create a new HBox to hold the task name and task time buttons
+                try {
+                    timeRemaining = Integer.parseInt(taskTimeText); // Kullanıcıdan alınan başlangıç geri sayım süresi
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Invalid input");
+                    alert.setHeaderText("Error");
+                    alert.setContentText("Please enter a valid time.");
+                    alert.showAndWait();
+                    return;
+                }
+
+                if (!taskName.isEmpty() && timeRemaining > 0) {
                     HBox taskHBox = new HBox(10);
-
-                    // Create a button for the task name
                     Button taskButton = new Button(taskName);
+                    Button taskTimeButton = new Button(taskTimeText); // Başlangıçta kullanıcıdan alınan geri sayım süresi
 
-                    // Create a button for the task time
-                    Button taskTimeButton = new Button(taskTime);
+                    taskButton.setOnAction(ti1Event -> {
+                        if (isCounting) {
+                            stopCountdown();
+                        } else {
+                            startCountdown(taskTimeButton);
+                        }
+                    });
 
-                    // Add the task name and task time buttons to the HBox
                     taskHBox.getChildren().addAll(taskButton, taskTimeButton);
-
-                    // Add the HBox to the VBox on the main screen
                     ((VBox) stage.getScene().getRoot()).getChildren().add(taskHBox);
-
-                    // Close the new task stage
                     newTaskStage.close();
                 } else {
                     Alert alert = new Alert(AlertType.ERROR);
                     alert.setTitle("Invalid input");
                     alert.setHeaderText("Error");
-                    alert.setContentText("Task name and time cannot be empty");
+                    alert.setContentText("Task name and time must be valid.");
                     alert.showAndWait();
                 }
             });
@@ -110,7 +126,30 @@ public class GUI extends Application {
         stage.show();
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    private void startCountdown(Button taskTimeButton) {
+        isCounting = true;
+        timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(() -> {
+                    if (timeRemaining > 0) {
+                        timeRemaining--;
+                        taskTimeButton.setText(String.valueOf(timeRemaining));
+                    } else {
+                        timer.cancel();
+                        isCounting = false;
+                    }
+                });
+            }
+        };
+        timer.scheduleAtFixedRate(timerTask, 1000, 1000); // 1 saniyelik sabit aralıklarla çalıştırılır
+    }
+
+    private void stopCountdown() {
+        isCounting = false;
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 }
