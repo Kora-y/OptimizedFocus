@@ -69,17 +69,23 @@ public class GUI extends Application {
             Label taskLabel = new Label("Enter task name:");
             TextField taskField = new TextField();
 
-            Label taskTimeLabel = new Label("Enter task time (in seconds):");
-            TextField taskTimeField = new TextField();
+            Label taskTimeLabel = new Label("Enter task time (minutes/seconds):");
+
+            TextField minutesField = new TextField();
+            minutesField.setPromptText("Minutes");
+            TextField secondsField = new TextField();
+            secondsField.setPromptText("Seconds");
 
             Button saveTaskButton = new Button("Save Task");
 
             saveTaskButton.setOnAction(saveEvent -> {
                 String taskName = taskField.getText();
-                String taskTimeText = taskTimeField.getText();
+                String taskminutesText = minutesField.getText();
+                String tasksecondsText = secondsField.getText();
+
 
                 try {
-                    timeRemaining = Integer.parseInt(taskTimeText); // Kullanıcıdan alınan başlangıç geri sayım süresi
+                    timeRemaining = Integer.parseInt(taskminutesText); // Kullanıcıdan alınan başlangıç geri sayım süresi
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(AlertType.ERROR);
                     alert.setTitle("Invalid input");
