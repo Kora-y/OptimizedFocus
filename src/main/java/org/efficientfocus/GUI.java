@@ -148,7 +148,7 @@ public class GUI extends Application {
                     }
                 });
             }
-        };
+        };getClass()
         timer.scheduleAtFixedRate(timerTask, 1000, 1000); // 1 saniyelik sabit aralıklarla çalıştırılır
     }
 
