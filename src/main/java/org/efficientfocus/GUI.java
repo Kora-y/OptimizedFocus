@@ -11,11 +11,29 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import org.efficientfocus.Task;
 
 public class GUI extends Application {
+    private Timer timer;
+
+    public void dateAndTime(Label timeLabel) {
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        timer = new Timer(true);
+        TimerTask updateTimeTask = new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(() -> {
+                    Date currentTime = new Date();
+                    timeLabel.setText(formatter.format(currentTime));
+                });
+            }
+        };
+        timer.scheduleAtFixedRate(updateTimeTask, 0, 1000); // Her saniye güncelle
+    }
 
     @Override
     public void start(Stage stage) {
@@ -55,12 +73,14 @@ public class GUI extends Application {
     }
 
     private void showMainApplication(Stage stage) {
+        stage.setTitle("ImprovedFocus");
         Label label = new Label("Welcome to the main application");
-
+        Label timeLabel = new Label();
+        dateAndTime(timeLabel);
         Button addTaskButton = new Button("Add Task");
 
-        VBox tasksVBox = new VBox(10);
-        HBox mainHBox = new HBox(10, new VBox(10, label, addTaskButton), tasksVBox);
+        VBox tasksVBox = new VBox(10); //******** bunun boş olma olayı ve sonradan nasıl içinin doldurulup tasksvbox a eklendiğine tekrar bakılacak *********
+        HBox mainHBox = new HBox(100, new VBox(10, label, addTaskButton), tasksVBox, new VBox(10, timeLabel));
 
         addTaskButton.setOnAction(event -> {
             Stage newTaskStage = new Stage();
