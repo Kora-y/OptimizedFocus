@@ -11,15 +11,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
 import java.util.Timer;
 import java.util.TimerTask;
+import org.efficientfocus.Task;
 
 public class GUI extends Application {
-
-    private boolean isCounting = false; // Zamanlayıcının çalışıp çalışmadığını kontrol eder
-    private Timer timer;
-    private int timeRemaining; // Geri sayımın kalan süresi
 
     @Override
     public void start(Stage stage) {
@@ -62,6 +58,10 @@ public class GUI extends Application {
         Label label = new Label("Welcome to the main application");
 
         Button addTaskButton = new Button("Add Task");
+
+        VBox tasksVBox = new VBox(10);
+        HBox mainHBox = new HBox(10, new VBox(10, label, addTaskButton), tasksVBox);
+
         addTaskButton.setOnAction(event -> {
             Stage newTaskStage = new Stage();
             newTaskStage.setTitle("Add New Task");
@@ -70,46 +70,54 @@ public class GUI extends Application {
             TextField taskField = new TextField();
 
             Label taskTimeLabel = new Label("Enter task time (minutes/seconds):");
-
             TextField minutesField = new TextField();
             minutesField.setPromptText("Minutes");
+
             TextField secondsField = new TextField();
             secondsField.setPromptText("Seconds");
+
+            HBox timeInputBox = new HBox(5, minutesField, secondsField);
 
             Button saveTaskButton = new Button("Save Task");
 
             saveTaskButton.setOnAction(saveEvent -> {
+                int timeRemaining = 0;
                 String taskName = taskField.getText();
-                String taskminutesText = minutesField.getText();
-                String tasksecondsText = secondsField.getText();
-
+                String minutesText = minutesField.getText();
+                String secondsText = secondsField.getText();
+                int minutes = 0;
+                int seconds = 0;
 
                 try {
-                    timeRemaining = Integer.parseInt(taskminutesText); // Kullanıcıdan alınan başlangıç geri sayım süresi
+                    if (!minutesText.isEmpty()) {
+                        minutes = Integer.parseInt(minutesText);
+                    }
+                    if (!secondsText.isEmpty()) {
+                        seconds = Integer.parseInt(secondsText);
+                    }
+                     timeRemaining = (minutes * 60) + seconds;
                 } catch (NumberFormatException e) {
                     Alert alert = new Alert(AlertType.ERROR);
                     alert.setTitle("Invalid input");
                     alert.setHeaderText("Error");
-                    alert.setContentText("Please enter a valid time.");
+                    alert.setContentText("Please enter valid numbers for minutes and seconds.");
                     alert.showAndWait();
                     return;
                 }
 
                 if (!taskName.isEmpty() && timeRemaining > 0) {
                     HBox taskHBox = new HBox(10);
-                    Button taskButton = new Button(taskName);
-                    Button taskTimeButton = new Button(taskTimeText); // Başlangıçta kullanıcıdan alınan geri sayım süresi
 
-                    taskButton.setOnAction(ti1Event -> {
-                        if (isCounting) {
-                            stopCountdown();
-                        } else {
-                            startCountdown(taskTimeButton);
-                        }
-                    });
+                    Label taskNameLabel = new Label(taskName);
+                    Label taskTimeLabel2 = new Label(String.format("%02d:%02d", minutes, seconds));
 
-                    taskHBox.getChildren().addAll(taskButton, taskTimeButton);
-                    ((VBox) stage.getScene().getRoot()).getChildren().add(taskHBox);
+                    Button startButton = new Button("Start");
+                    Button stopButton = new Button("Stop");
+
+                    Task task = new Task(taskName, timeRemaining, taskTimeLabel2, startButton, stopButton);
+
+                    taskHBox.getChildren().addAll(taskNameLabel, taskTimeLabel2, startButton, stopButton);
+                    tasksVBox.getChildren().add(taskHBox);
                     newTaskStage.close();
                 } else {
                     Alert alert = new Alert(AlertType.ERROR);
@@ -120,42 +128,14 @@ public class GUI extends Application {
                 }
             });
 
-            VBox taskVBox = new VBox(10, taskLabel, taskField, taskTimeLabel, taskTimeField, saveTaskButton);
+            VBox taskVBox = new VBox(10, taskLabel, taskField, taskTimeLabel, timeInputBox, saveTaskButton);
             Scene newTaskScene = new Scene(taskVBox, 300, 200);
             newTaskStage.setScene(newTaskScene);
             newTaskStage.show();
         });
 
-        VBox vbox = new VBox(10, label, addTaskButton);
-        Scene scene = new Scene(vbox, 800, 400);
+        Scene scene = new Scene(mainHBox, 800, 400);
         stage.setScene(scene);
         stage.show();
-    }
-
-    private void startCountdown(Button taskTimeButton) {
-        isCounting = true;
-        timer = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                Platform.runLater(() -> {
-                    if (timeRemaining > 0) {
-                        timeRemaining--;
-                        taskTimeButton.setText(String.valueOf(timeRemaining));
-                    } else {
-                        timer.cancel();
-                        isCounting = false;
-                    }
-                });
-            }
-        };getClass()
-        timer.scheduleAtFixedRate(timerTask, 1000, 1000); // 1 saniyelik sabit aralıklarla çalıştırılır
-    }
-
-    private void stopCountdown() {
-        isCounting = false;
-        if (timer != null) {
-            timer.cancel();
-        }
     }
 }
